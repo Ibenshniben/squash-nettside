@@ -11,8 +11,8 @@ export default function About() {
         </p>
       </div>
       
-      <div className="max-w-5xl mx-auto mb-16 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-        <div>
+      <div className="max-w-5xl mx-auto mb-16 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+        <div className="px-4">
           <h2 className="text-2xl font-bold mb-4">Vår Historie</h2>
           <p className="mb-4">
             Søm Squash ble etablert i 2005 med en visjon om å skape et førsteklasses squashsenter i Kristiansand. 
@@ -27,10 +27,15 @@ export default function About() {
             og et vennlig, inkluderende miljø for alle som deler vår lidenskap for squash.
           </p>
         </div>
-        <div className="relative h-[400px] w-full">
-          <div className="bg-gray-300 h-full w-full flex items-center justify-center">
-            <p className="text-gray-600">Bilde av Søm Squash fasiliteter</p>
-          </div>
+        <div className="relative h-[300px] md:h-[400px] w-full mx-auto max-w-[90%] md:max-w-full">
+          <Image 
+            src="/images/som-squash-logo.png" 
+            alt="Søm Squash fasiliteter" 
+            fill 
+            style={{ objectFit: 'contain' }}
+            className="rounded-lg shadow-md"
+            priority
+          />
         </div>
       </div>
       
