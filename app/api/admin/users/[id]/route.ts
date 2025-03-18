@@ -38,8 +38,8 @@ export async function PATCH(
 
 // Delete user (admin only)
 export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  context: any
 ) {
   const session = await getServerSession(authOptions);
 
@@ -47,7 +47,7 @@ export async function DELETE(
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
 
-  const userId = params.id;
+  const userId = context.params.id;
 
   if (!userId) {
     return NextResponse.json({ message: 'Invalid request' }, { status: 400 });
