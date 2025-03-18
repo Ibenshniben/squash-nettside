@@ -38,7 +38,7 @@ export async function PATCH(
 
 // Delete user (admin only)
 export async function DELETE(
-  request: NextRequest,
+  req: NextRequest,
   { params }: { params: { id: string } }
 ) {
   const session = await getServerSession(authOptions);
