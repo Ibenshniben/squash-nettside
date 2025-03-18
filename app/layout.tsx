@@ -5,6 +5,12 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { AuthProvider } from "../components/AuthProvider";
 
+// Replace the Geist font imports with Inter, which is supported by default
+import { Inter, Roboto_Mono } from 'next/font/google';
+
+const inter = Inter({ subsets: ['latin'] });
+const robotoMono = Roboto_Mono({ subsets: ['latin'] });
+
 const geist = Geist({ subsets: ["latin"] });
 const geistMono = Geist_Mono({ subsets: ["latin"] });
 
@@ -19,8 +25,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="no">
-      <body className={`${geist.className} min-h-screen flex flex-col`}>
+    <html lang="en">
+      <body className={inter.className}>
         <AuthProvider>
           <Navbar />
           <main className="flex-grow">{children}</main>
