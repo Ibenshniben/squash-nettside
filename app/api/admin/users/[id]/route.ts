@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
 // Update user role (admin only)
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: any
 ) {
   const session = await getServerSession(authOptions);
 
@@ -16,7 +16,7 @@ export async function PATCH(
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
 
-  const userId = params.id;
+  const userId = context.params.id;
   const { role } = await request.json();
 
   if (!userId || !role || !['ADMIN', 'USER'].includes(role)) {
