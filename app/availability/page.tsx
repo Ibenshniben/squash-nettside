@@ -3,18 +3,17 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 
-// Mock data for court bookings - in a real app, this would come from your backend
+// Mock booking data for demonstration
 const mockBookings = [
-  { id: 1, court: '1', date: '2024-07-15', startTime: '08:00', endTime: '09:00', memberName: 'Ole Hansen' },
-  { id: 2, court: '2', date: '2024-07-15', startTime: '10:00', endTime: '11:00', memberName: 'Kari Olsen' },
-  { id: 3, court: '3', date: '2024-07-15', startTime: '16:00', endTime: '17:00', memberName: 'Erik Johansen' },
-  { id: 4, court: '1', date: '2024-07-16', startTime: '18:00', endTime: '19:00', memberName: 'Lisa Pedersen' },
+  { id: 1, court: '1', date: '2024-06-01', startTime: '10:00', endTime: '11:00', name: 'Ole Hansen' },
+  { id: 2, court: '2', date: '2024-06-01', startTime: '14:00', endTime: '15:00', name: 'Kari Olsen' },
+  { id: 3, court: '3', date: '2024-06-01', startTime: '18:00', endTime: '19:00', name: 'Erik Johansen' },
+  { id: 4, court: '1', date: '2024-06-02', startTime: '09:00', endTime: '10:00', name: 'Lisa Pedersen' },
 ]
 
 export default function Availability() {
   const [selectedDate, setSelectedDate] = useState('')
   const [bookings, setBookings] = useState(mockBookings)
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
   
   // Set today's date as default
   useEffect(() => {
@@ -96,24 +95,20 @@ export default function Availability() {
                   <td className="py-3 px-4 border-r font-medium">{time}</td>
                   {['1', '2', '3'].map((court) => {
                     const booked = isBooked(court, time)
-                    const bookingDetails = getBookingDetails(court, time)
-                    
                     return (
                       <td 
                         key={`${court}-${time}`} 
                         className={`py-3 px-4 border-r text-center ${booked ? 'bg-red-100' : 'bg-green-100'}`}
                       >
                         {booked ? (
-                          <div>
-                            <span className="font-medium">Opptatt</span>
-                          </div>
+                          <span className="text-red-600 font-medium">Opptatt</span>
                         ) : (
                           <div>
-                            <span className="font-medium">Ledig</span>
+                            <span className="text-green-600 font-medium">Ledig</span>
                             <div className="mt-1">
                               <Link 
                                 href="/booking" 
-                                className="text-sm text-blue-600 hover:underline"
+                                className="text-xs text-blue-600 hover:underline"
                               >
                                 Bestill
                               </Link>
@@ -130,21 +125,14 @@ export default function Availability() {
         </div>
       </div>
       
-      <div className="max-w-6xl mx-auto bg-blue-50 p-6 rounded-lg">
-        <h2 className="text-xl font-bold mb-4">Vil du bestille bane?</h2>
-        <p className="mb-4">For å bestille bane må du være medlem av Søm Squash.</p>
-        <div className="flex gap-4">
-          <Link 
-            href="/membership" 
-            className="bg-blue-800 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
-          >
-            Bli medlem
+      <div className="max-w-6xl mx-auto mt-12 text-center">
+        <p className="mb-4">Ønsker du å bestille en bane?</p>
+        <div className="flex flex-col sm:flex-row justify-center gap-4">
+          <Link href="/booking" className="bg-blue-800 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-700 transition">
+            Bestill Bane
           </Link>
-          <Link 
-            href="/booking" 
-            className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition"
-          >
-            Logg inn for å bestille
+          <Link href="/membership" className="bg-transparent border-2 border-blue-800 text-blue-800 px-6 py-3 rounded-lg font-bold hover:bg-blue-50 transition">
+            Se Medlemskap
           </Link>
         </div>
       </div>
