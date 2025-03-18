@@ -1,197 +1,279 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 export default function Booking() {
-  const [date, setDate] = useState('')
-  const [court, setCourt] = useState('1')
-  const [time, setTime] = useState('')
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [phone, setPhone] = useState('')
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  
+  const { data: session, status } = useSession()
   const router = useRouter()
-  
-  // Check if user is logged in
-  useEffect(() => {
-    // In a real app, you would verify the authentication token with your backend
-    const loggedIn = localStorage.getItem('isLoggedIn') === 'true'
-    const userEmail = localStorage.getItem('userEmail')
-    
-    setIsLoggedIn(loggedIn)
-    if (loggedIn && userEmail) {
-      setEmail(userEmail)
-    }
-    
-    setIsLoading(false)
-  }, [])
-  
+  const [selectedDate, setSelectedDate] = useState('')
+  const [selectedCourt, setSelectedCourt] = useState('1')
+  const [selectedTime, setSelectedTime] = useState('')
+  const [bookings, setBookings] = useState([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
+
   // Available time slots
   const timeSlots = [
     '07:00', '08:00', '09:00', '10:00', '11:00', '12:00',
     '13:00', '14:00', '15:00', '16:00', '17:00', '18:00',
-    '19:00', '20:00', '21:00'
+    '19:00', '20:00', '21:00', '22:00'
   ]
-  
-  const handleSubmit = (e: React.FormEvent) => {
+
+  // Set today's date as default
+  useEffect(() => {
+    const today = new Date().toISOString().split('T')[0]
+    setSelectedDate(today)
+    
+    // Redirect if not logged in
+    if (status === 'unauthenticated') {
+      router.push('/login?callbackUrl=/booking')
+    }
+  }, [status, router])
+
+  // Fetch bookings when date changes
+  useEffect(() => {
+    if (selectedDate) {
+      fetchBookings()
+    }
+  }, [selectedDate])
+
+  const fetchBookings = async () => {
+    try {
+      setIsLoading(true)
+      const response = await fetch(`/api/bookings?date=${selectedDate}`)
+      const data = await response.json()
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to fetch bookings')
+      }
+      
+      setBookings(data.bookings)
+    } catch (error) {
+      console.error('Error fetching bookings:', error)
+      setError('Kunne ikke hente reservasjoner. Vennligst prøv igjen.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const isTimeSlotBooked = (court, time) => {
+    return bookings.some(booking => 
+      booking.court === court && 
+      booking.startTime === time
+    )
+  }
+
+  const handleBooking = async (e) => {
     e.preventDefault()
     
-    // Here you would typically send the booking data to your backend
-    alert(`Bestilling bekreftet!\n\nBane: ${court}\nDato: ${date}\nTid: ${time}\nNavn: ${name}`)
-    
-    // Reset form
-    setDate('')
-    setCourt('1')
-    setTime('')
-    setName('')
-    setPhone('')
-    
-    // Redirect to availability page to see updated bookings
-    router.push('/availability')
+    if (!selectedDate || !selectedCourt || !selectedTime) {
+      setError('Vennligst velg dato, bane og tid')
+      return
+    }
+
+    try {
+      setIsLoading(true)
+      setError('')
+      setSuccess('')
+      
+      // Calculate end time (1 hour after start time)
+      const [hours, minutes] = selectedTime.split(':')
+      const endHour = parseInt(hours) + 1
+      const endTime = `${endHour.toString().padStart(2, '0')}:${minutes}`
+      
+      const response = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          date: selectedDate,
+          court: selectedCourt,
+          startTime: selectedTime,
+          endTime: endTime,
+        }),
+      })
+      
+      const data = await response.json()
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to create booking')
+      }
+      
+      setSuccess('Banen er reservert!')
+      fetchBookings() // Refresh bookings
+      setSelectedTime('') // Reset selected time
+    } catch (error) {
+      console.error('Error creating booking:', error)
+      setError(error.message || 'Kunne ikke reservere bane. Vennligst prøv igjen.')
+    } finally {
+      setIsLoading(false)
+    }
   }
-  
-  // Show loading state
-  if (isLoading) {
+
+  if (status === 'loading') {
     return (
       <div className="container mx-auto px-4 py-12 text-center">
-        <p>Laster inn...</p>
+        <p>Laster...</p>
       </div>
     )
   }
-  
-  // If user is not logged in, show login requirement
-  if (!isLoggedIn) {
-    return (
-      <div className="container mx-auto px-4 py-12">
-        <h1 className="text-3xl font-bold mb-8 text-center">Bestill Bane</h1>
-        
-        <div className="max-w-md mx-auto bg-white p-8 rounded-lg shadow-md">
-          <div className="text-center mb-6">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto text-blue-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
-            <h2 className="text-2xl font-bold mt-4">Medlemsinnlogging kreves</h2>
-            <p className="mt-2 text-gray-600">Du må være innlogget som medlem for å bestille bane.</p>
-          </div>
-          
-          <div className="space-y-4">
-            <Link href="/login" className="block w-full bg-blue-800 text-white text-center py-2 px-4 rounded-md hover:bg-blue-700 transition">
-              Logg inn
-            </Link>
-            <Link href="/membership" className="block w-full bg-green-600 text-white text-center py-2 px-4 rounded-md hover:bg-green-700 transition">
-              Bli medlem
-            </Link>
-            <Link href="/availability" className="block w-full text-blue-800 text-center py-2 px-4 border border-blue-800 rounded-md hover:bg-blue-50 transition">
-              Se baneoversikt
-            </Link>
-          </div>
-        </div>
-      </div>
-    )
-  }
-  
+
   return (
     <div className="container mx-auto px-4 py-12">
       <h1 className="text-3xl font-bold mb-8 text-center">Bestill Bane</h1>
       
-      <div className="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md">
-        <form onSubmit={handleSubmit}>
-          <div className="mb-6">
-            <label htmlFor="date" className="block text-gray-700 font-bold mb-2">Dato</label>
-            <input
-              type="date"
-              id="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-              min={new Date().toISOString().split('T')[0]}
-            />
+      {!session ? (
+        <div className="max-w-md mx-auto bg-white p-8 rounded-lg shadow-md text-center">
+          <p className="mb-4">Du må være logget inn for å bestille bane.</p>
+          <Link 
+            href="/login?callbackUrl=/booking" 
+            className="bg-blue-800 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition inline-block"
+          >
+            Logg inn
+          </Link>
+        </div>
+      ) : (
+        <div className="max-w-4xl mx-auto">
+          {error && (
+            <div className="mb-6 p-4 bg-red-100 text-red-700 rounded-md">
+              {error}
+            </div>
+          )}
+          
+          {success && (
+            <div className="mb-6 p-4 bg-green-100 text-green-700 rounded-md">
+              {success}
+            </div>
+          )}
+          
+          <div className="bg-white p-6 rounded-lg shadow-md mb-8">
+            <h2 className="text-2xl font-bold mb-4">Velg dato og bane</h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              <div>
+                <label htmlFor="date" className="block text-gray-700 font-bold mb-2">Dato</label>
+                <input 
+                  type="date" 
+                  id="date" 
+                  value={selectedDate}
+                  min={new Date().toISOString().split('T')[0]}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              
+              <div>
+                <label htmlFor="court" className="block text-gray-700 font-bold mb-2">Bane</label>
+                <select 
+                  id="court" 
+                  value={selectedCourt}
+                  onChange={(e) => setSelectedCourt(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="1">Bane 1</option>
+                  <option value="2">Bane 2</option>
+                  <option value="3">Bane 3</option>
+                </select>
+              </div>
+            </div>
           </div>
           
-          <div className="mb-6">
-            <label htmlFor="court" className="block text-gray-700 font-bold mb-2">Velg Bane</label>
-            <select
-              id="court"
-              value={court}
-              onChange={(e) => setCourt(e.target.value)}
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            >
-              <option value="1">Bane 1</option>
-              <option value="2">Bane 2</option>
-              <option value="3">Bane 3</option>
-            </select>
+          <div className="bg-white p-6 rounded-lg shadow-md">
+            <h2 className="text-2xl font-bold mb-4">Velg tid</h2>
+            
+            {isLoading ? (
+              <p className="text-center py-4">Laster tilgjengelige tider...</p>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                {timeSlots.map((time) => {
+                  const isBooked = isTimeSlotBooked(selectedCourt, time)
+                  return (
+                    <button
+                      key={time}
+                      onClick={() => !isBooked && setSelectedTime(time)}
+                      className={`py-2 px-4 rounded-md text-center ${
+                        isBooked 
+                          ? 'bg-gray-200 text-gray-500 cursor-not-allowed' 
+                          : selectedTime === time
+                            ? 'bg-blue-800 text-white'
+                            : 'bg-white border border-gray-300 hover:bg-gray-50'
+                      }`}
+                      disabled={isBooked}
+                    >
+                      {time}
+                      {isBooked && <span className="block text-xs mt-1">(Opptatt)</span>}
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+            
+            {selectedTime && (
+              <div className="mt-8 text-center">
+                <p className="mb-4">
+                  Du har valgt <strong>Bane {selectedCourt}</strong> den <strong>{selectedDate}</strong> kl. <strong>{selectedTime}</strong>
+                </p>
+                <button
+                  onClick={handleBooking}
+                  disabled={isLoading}
+                  className="bg-blue-800 text-white py-2 px-6 rounded-md hover:bg-blue-700 transition disabled:opacity-70"
+                >
+                  {isLoading ? 'Behandler...' : 'Bestill bane'}
+                </button>
+              </div>
+            )}
           </div>
           
-          <div className="mb-6">
-            <label htmlFor="time" className="block text-gray-700 font-bold mb-2">Velg Tid</label>
-            <select
-              id="time"
-              value={time}
-              onChange={(e) => setTime(e.target.value)}
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            >
-              <option value="">Velg tid</option>
-              {timeSlots.map((t) => (
-                <option key={t} value={t}>{t}</option>
-              ))}
-            </select>
+          <div className="mt-8">
+            <Link href="/my-bookings" className="text-blue-800 hover:underline">
+              Se mine reservasjoner
+            </Link>
           </div>
-          
-          <div className="mb-6">
-            <label htmlFor="name" className="block text-gray-700 font-bold mb-2">Navn</label>
-            <input
-              type="text"
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-          
-          <div className="mb-6">
-            <label htmlFor="email" className="block text-gray-700 font-bold mb-2">E-post</label>
-            <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-              readOnly
-            />
-            <p className="text-sm text-gray-500 mt-1">E-post fra din medlemsprofil</p>
-          </div>
-          
-          <div className="mb-6">
-            <label htmlFor="phone" className="block text-gray-700 font-bold mb-2">Telefon</label>
-            <input
-              type="tel"
-              id="phone"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-          
-          <div className="text-center">
-            <button
-              type="submit"
-              className="bg-blue-800 text-white px-6 py-3 rounded-lg font-bold text-lg hover:bg-blue-700 transition"
-            >
-              Bekreft Bestilling
-            </button>
-          </div>
-        </form>
-      </div>
+        </div>
+      )}
     </div>
   )
 }
+
+
+// In your booking form submission handler:
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setIsSubmitting(true);
+  setError('');
+
+  try {
+    const response = await fetch('/api/bookings', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        court,
+        date,
+        startTime,
+        endTime,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Failed to create booking');
+    }
+
+    setSuccess('Reservasjon opprettet!');
+    // Reset form or redirect
+    router.push('/my-bookings');
+  } catch (error) {
+    console.error('Error creating booking:', error);
+    setError('Kunne ikke opprette reservasjon. Vennligst prøv igjen.');
+  } finally {
+    setIsSubmitting(false);
+  }
+};

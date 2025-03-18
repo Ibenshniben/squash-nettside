@@ -1,34 +1,32 @@
-import './globals.css'
-import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
-import Link from 'next/link'
-import Navbar from '../components/Navbar'
-import Footer from '../components/Footer'
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
+import "./globals.css";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
+import { AuthProvider } from "../components/AuthProvider";
 
-const inter = Inter({ subsets: ['latin'] })
+const geist = Geist({ subsets: ["latin"] });
+const geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'Søm Squash - Kristiansand',
-  description: 'Søm Squash er Kristiansands ledende squashklubb med førsteklasses fasiliteter og en inkluderende atmosfære for alle squashentusiaster.',
-}
+  title: "Søm Squash",
+  description: "Squashbaner i Kristiansand",
+};
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <html lang="no">
-      <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-      </head>
-      <body className={inter.className}>
-        <Navbar />
-        <main className="min-h-screen bg-gray-100">
-          {children}
-        </main>
-        <Footer />
+      <body className={`${geist.className} min-h-screen flex flex-col`}>
+        <AuthProvider>
+          <Navbar />
+          <main className="flex-grow">{children}</main>
+          <Footer />
+        </AuthProvider>
       </body>
     </html>
-  )
+  );
 }

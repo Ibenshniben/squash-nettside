@@ -6,8 +6,12 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  // Remove any 'output: "export"' setting if it exists
-  // This is likely causing the routes-manifest.json issue
+  // Adding environment variables configuration
+  env: {
+    NEXTAUTH_URL: process.env.NEXTAUTH_URL,
+    NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
+    DATABASE_URL: process.env.DATABASE_URL,
+  }
 }
 
 module.exports = nextConfig
