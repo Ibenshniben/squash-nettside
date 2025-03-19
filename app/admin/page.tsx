@@ -4,11 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 
-// Update the import to use the auth.ts file directly
-import { authOptions } from '../api/auth/[...nextauth]/auth'
-
-// For the type error, make sure you're properly typing your bookings state
-// For example:
+// Define the Booking interface
 interface Booking {
   id: string;
   court: string;
@@ -16,20 +12,25 @@ interface Booking {
   startTime: string;
   endTime: string;
   user?: {
-    name: string;
-    email: string;
+    name: string | null;
+    email: string | null;
+    id: string;
   };
 }
 
-// Then use this type for your bookings state
-const [bookings, setBookings] = useState<Booking[]>([]);
+// Define the User interface
+interface User {
+  id: string;
+  name: string | null;
+  email: string | null;
+  role: string;
+}
 
-// This should fix the "Property 'id' does not exist on type 'never'" error
 export default function AdminDashboard() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const [users, setUsers] = useState([])
-  const [bookings, setBookings] = useState([])
+  const [users, setUsers] = useState<User[]>([])
+  const [bookings, setBookings] = useState<Booking[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('bookings')
   const [error, setError] = useState('')

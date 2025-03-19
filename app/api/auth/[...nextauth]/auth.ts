@@ -6,10 +6,8 @@ import { NextAuthOptions } from 'next-auth';
 
 const prisma = new PrismaClient();
 
-// Make sure this file is exporting authOptions correctly
-export const authOptions = {
+export const authOptions: NextAuthOptions = {
   // Your auth configuration
-  // Make sure this is properly exported
   adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
