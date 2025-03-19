@@ -150,7 +150,8 @@ export default function AdminDashboard() {
     }
   }
 
-  const handleDeleteUser = async (userId) => {
+  // Add type annotation to the userId parameter
+  const handleDeleteUser = async (userId: string) => {
     if (!confirm('Er du sikker på at du vil slette denne brukeren? Alle reservasjoner for denne brukeren vil også bli slettet.')) {
       return
     }
