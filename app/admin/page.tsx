@@ -118,7 +118,7 @@ export default function AdminDashboard() {
     }
   }
 
-  // Fix the TypeScript error by adding type annotations
+  // Add type annotation to the userId parameter
   const handleToggleUserRole = async (userId: string, currentRole: string) => {
     const newRole = currentRole === 'ADMIN' ? 'USER' : 'ADMIN'
     
