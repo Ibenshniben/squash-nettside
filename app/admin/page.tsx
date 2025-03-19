@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 
-// Update the import to use the auth.ts file directly
+// Update the import to use the correct path
 import { authOptions } from '../api/auth/[...nextauth]/auth'
 
 // Define interfaces for type safety
