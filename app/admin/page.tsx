@@ -168,8 +168,8 @@ export default function AdminDashboard() {
       
       // Remove the deleted user from the list
       setUsers(users.filter(user => user.id !== userId))
-      // Also remove any bookings by this user
-      setBookings(bookings.filter(booking => booking.userId !== userId))
+      // Fix: Use user?.id instead of userId which doesn't exist on Booking
+      setBookings(bookings.filter(booking => booking.user?.id !== userId))
     } catch (error) {
       console.error('Error deleting user:', error)
       setError('Kunne ikke slette brukeren. Vennligst prøv igjen.')
