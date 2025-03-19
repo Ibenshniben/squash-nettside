@@ -116,7 +116,7 @@ export default function AdminDashboard() {
     }
   }
 
-  const handleToggleUserRole = async (userId, currentRole) => {
+  const handleToggleUserRole = async (userId: string, currentRole: string) => {
     const newRole = currentRole === 'ADMIN' ? 'USER' : 'ADMIN'
     
     if (!confirm(`Er du sikker på at du vil endre brukerens rolle til ${newRole}?`)) {
