@@ -1,23 +1,23 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { PrismaClient } from '@prisma/client';
-import { authOptions } from '../auth/[...nextauth]/route';
+import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth/next'
+import { authOptions } from '../auth/[...nextauth]/route'
+import { PrismaClient } from '@prisma/client'
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient()
 
 export async function POST(request: NextRequest) {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession(authOptions)
 
   if (!session) {
-    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
   }
 
   try {
-    const { court, date, startTime, endTime } = await request.json();
+    const { court, date, startTime, endTime } = await request.json()
 
     // Validate input
     if (!court || !date || !startTime || !endTime) {
-      return NextResponse.json({ message: 'Missing required fields' }, { status: 400 });
+      return NextResponse.json({ message: 'Missing required fields' }, { status: 400 })
     }
 
     // Check for existing bookings at the same time and court
@@ -27,10 +27,10 @@ export async function POST(request: NextRequest) {
         date,
         startTime,
       },
-    });
+    })
 
     if (existingBooking) {
-      return NextResponse.json({ message: 'This court is already booked for the selected time' }, { status: 409 });
+      return NextResponse.json({ message: 'This court is already booked for the selected time' }, { status: 409 })
     }
 
     // Create booking
@@ -42,33 +42,35 @@ export async function POST(request: NextRequest) {
         endTime,
         userId: session.user.id,
       },
-    });
+    })
 
-    return NextResponse.json({ booking }, { status: 201 });
+    return NextResponse.json({ booking }, { status: 201 })
   } catch (error) {
-    console.error('Error creating booking:', error);
-    return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
+    console.error('Error creating booking:', error)
+    return NextResponse.json({ message: 'Internal server error' }, { status: 500 })
   }
 }
 
 export async function GET(request: NextRequest) {
-  const session = await getServerSession(authOptions);
-
+  // Get the session
+  const session = await getServerSession(authOptions)
+  
+  // Check if user is authenticated
   if (!session) {
-    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
   }
-
+  
   try {
     // Get date from query params if provided
-    const url = new URL(request.url);
-    const date = url.searchParams.get('date');
+    const url = new URL(request.url)
+    const date = url.searchParams.get('date')
     
     // Build the query
-    const query: any = {};
+    const query: any = {}
     
     // Add date filter if provided
     if (date) {
-      query.date = date;
+      query.date = date
     }
     
     // For admin users, return all bookings for the date
@@ -86,11 +88,11 @@ export async function GET(request: NextRequest) {
       orderBy: {
         startTime: 'asc',
       },
-    });
+    })
 
-    return NextResponse.json({ bookings });
+    return NextResponse.json({ bookings })
   } catch (error) {
-    console.error('Error fetching bookings:', error);
-    return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
+    console.error('Error fetching bookings:', error)
+    return NextResponse.json({ message: 'Internal server error' }, { status: 500 })
   }
 }

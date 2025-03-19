@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
-export default function Booking() {
+export default function BookingPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [selectedDate, setSelectedDate] = useState('')
@@ -14,52 +14,37 @@ export default function Booking() {
   const [bookings, setBookings] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
-
-  // Available time slots
-  const timeSlots = [
-    '07:00', '08:00', '09:00', '10:00', '11:00', '12:00',
-    '13:00', '14:00', '15:00', '16:00', '17:00', '18:00',
-    '19:00', '20:00', '21:00', '22:00'
-  ]
-
+  const [isAuthorized, setIsAuthorized] = useState(false)
+  
   // Set today's date as default
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0]
     setSelectedDate(today)
     
-    // Redirect if not logged in
-    if (status === 'unauthenticated') {
-      router.push('/login?callbackUrl=/booking')
+    // Check if user is authenticated
+    if (status === 'authenticated') {
+      setIsAuthorized(true)
     }
-  }, [status, router])
-
-  // Fetch bookings when date changes
-  useEffect(() => {
-    if (selectedDate) {
-      fetchBookings()
+  }, [status])
+  
+  // Debug function properly defined inside component
+  const debugSession = () => {
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('Session:', session)
+      console.log('Status:', status)
+      return (
+        <div className="bg-gray-100 p-4 mb-4 rounded">
+          <h3 className="font-bold">Debug Session Info:</h3>
+          <pre className="text-xs mt-2 overflow-auto">
+            {JSON.stringify(session, null, 2)}
+          </pre>
+          <p>Status: {status}</p>
+        </div>
+      )
     }
-  }, [selectedDate])
-
-  const fetchBookings = async () => {
-    try {
-      setIsLoading(true)
-      const response = await fetch(`/api/bookings?date=${selectedDate}`)
-      const data = await response.json()
-      
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to fetch bookings')
-      }
-      
-      setBookings(data.bookings)
-    } catch (error) {
-      console.error('Error fetching bookings:', error)
-      setError('Kunne ikke hente reservasjoner. Vennligst prøv igjen.')
-    } finally {
-      setIsLoading(false)
-    }
+    return null
   }
-
+  
   const isTimeSlotBooked = (court, time) => {
     return bookings.some(booking => 
       booking.court === court && 
@@ -127,153 +112,21 @@ export default function Booking() {
     <div className="container mx-auto px-4 py-12">
       <h1 className="text-3xl font-bold mb-8 text-center">Bestill Bane</h1>
       
-      {!session ? (
-        <div className="max-w-md mx-auto bg-white p-8 rounded-lg shadow-md text-center">
-          <p className="mb-4">Du må være logget inn for å bestille bane.</p>
-          <Link 
-            href="/login?callbackUrl=/booking" 
-            className="bg-blue-800 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition inline-block"
-          >
-            Logg inn
-          </Link>
+      {/* Add debug session info */}
+      {process.env.NODE_ENV !== 'production' && debugSession()}
+      
+      {!isAuthorized && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+          Unauthorized
         </div>
-      ) : (
-        <div className="max-w-4xl mx-auto">
-          {error && (
-            <div className="mb-6 p-4 bg-red-100 text-red-700 rounded-md">
-              {error}
-            </div>
-          )}
-          
-          {success && (
-            <div className="mb-6 p-4 bg-green-100 text-green-700 rounded-md">
-              {success}
-            </div>
-          )}
-          
-          <div className="bg-white p-6 rounded-lg shadow-md mb-8">
-            <h2 className="text-2xl font-bold mb-4">Velg dato og bane</h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-              <div>
-                <label htmlFor="date" className="block text-gray-700 font-bold mb-2">Dato</label>
-                <input 
-                  type="date" 
-                  id="date" 
-                  value={selectedDate}
-                  min={new Date().toISOString().split('T')[0]}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              
-              <div>
-                <label htmlFor="court" className="block text-gray-700 font-bold mb-2">Bane</label>
-                <select 
-                  id="court" 
-                  value={selectedCourt}
-                  onChange={(e) => setSelectedCourt(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="1">Bane 1</option>
-                  <option value="2">Bane 2</option>
-                  <option value="3">Bane 3</option>
-                </select>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <h2 className="text-2xl font-bold mb-4">Velg tid</h2>
-            
-            {isLoading ? (
-              <p className="text-center py-4">Laster tilgjengelige tider...</p>
-            ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                {timeSlots.map((time) => {
-                  const isBooked = isTimeSlotBooked(selectedCourt, time)
-                  return (
-                    <button
-                      key={time}
-                      onClick={() => !isBooked && setSelectedTime(time)}
-                      className={`py-2 px-4 rounded-md text-center ${
-                        isBooked 
-                          ? 'bg-gray-200 text-gray-500 cursor-not-allowed' 
-                          : selectedTime === time
-                            ? 'bg-blue-800 text-white'
-                            : 'bg-white border border-gray-300 hover:bg-gray-50'
-                      }`}
-                      disabled={isBooked}
-                    >
-                      {time}
-                      {isBooked && <span className="block text-xs mt-1">(Opptatt)</span>}
-                    </button>
-                  )
-                })}
-              </div>
-            )}
-            
-            {selectedTime && (
-              <div className="mt-8 text-center">
-                <p className="mb-4">
-                  Du har valgt <strong>Bane {selectedCourt}</strong> den <strong>{selectedDate}</strong> kl. <strong>{selectedTime}</strong>
-                </p>
-                <button
-                  onClick={handleBooking}
-                  disabled={isLoading}
-                  className="bg-blue-800 text-white py-2 px-6 rounded-md hover:bg-blue-700 transition disabled:opacity-70"
-                >
-                  {isLoading ? 'Behandler...' : 'Bestill bane'}
-                </button>
-              </div>
-            )}
-          </div>
-          
-          <div className="mt-8">
-            <Link href="/my-bookings" className="text-blue-800 hover:underline">
-              Se mine reservasjoner
-            </Link>
-          </div>
+      )}
+      
+      {isAuthorized && (
+        // Your booking form components here
+        <div>
+          {/* Rest of your booking form */}
         </div>
       )}
     </div>
   )
 }
-
-
-// In your booking form submission handler:
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setIsSubmitting(true);
-  setError('');
-
-  try {
-    const response = await fetch('/api/bookings', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        court,
-        date,
-        startTime,
-        endTime,
-      }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || 'Failed to create booking');
-    }
-
-    setSuccess('Reservasjon opprettet!');
-    // Reset form or redirect
-    router.push('/my-bookings');
-  } catch (error) {
-    console.error('Error creating booking:', error);
-    setError('Kunne ikke opprette reservasjon. Vennligst prøv igjen.');
-  } finally {
-    setIsSubmitting(false);
-  }
-};
