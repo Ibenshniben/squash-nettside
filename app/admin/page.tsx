@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 
+import { authOptions } from '../api/auth/[...nextauth]/options'
+
 export default function AdminDashboard() {
   const { data: session, status } = useSession()
   const router = useRouter()
@@ -71,7 +73,7 @@ export default function AdminDashboard() {
     }
   }
 
-  const handleDeleteBooking = async (bookingId) => {
+  const handleDeleteBooking = async (bookingId: string) => {
     if (!confirm('Er du sikker på at du vil slette denne reservasjonen?')) {
       return
     }
