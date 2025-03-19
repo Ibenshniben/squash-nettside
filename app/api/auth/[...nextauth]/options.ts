@@ -1,5 +1,4 @@
-// Move the authOptions to this file
+// Export the auth options from the auth.ts file
 import { authOptions } from './auth'
 
-// Export it from here
 export { authOptions }
