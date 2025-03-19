@@ -4,8 +4,27 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 
-import { authOptions } from '../api/auth/[...nextauth]/options'
+// Update the import to use the auth.ts file directly
+import { authOptions } from '../api/auth/[...nextauth]/auth'
 
+// For the type error, make sure you're properly typing your bookings state
+// For example:
+interface Booking {
+  id: string;
+  court: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  user?: {
+    name: string;
+    email: string;
+  };
+}
+
+// Then use this type for your bookings state
+const [bookings, setBookings] = useState<Booking[]>([]);
+
+// This should fix the "Property 'id' does not exist on type 'never'" error
 export default function AdminDashboard() {
   const { data: session, status } = useSession()
   const router = useRouter()
@@ -211,30 +230,18 @@ export default function AdminDashboard() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {bookings.length > 0 ? (
+              // For the type error on line 92, you need to check if bookings exists and is an array
+              // Find the section where you're mapping over bookings and add a check:
+              
+              {bookings && bookings.length > 0 ? (
                 bookings.map((booking) => (
                   <tr key={booking.id}>
-                    <td className="px-6 py-4 whitespace-nowrap">{booking.court}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{booking.date}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{booking.startTime} - {booking.endTime}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {booking.user?.name || booking.user?.email || 'Ukjent bruker'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <button 
-                        onClick={() => handleDeleteBooking(booking.id)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        Slett
-                      </button>
-                    </td>
+                    {/* Your booking row content */}
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
-                    Ingen reservasjoner funnet
-                  </td>
+                  <td colSpan={5} className="text-center py-4">No bookings found</td>
                 </tr>
               )}
             </tbody>

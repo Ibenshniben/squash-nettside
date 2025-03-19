@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
-import { authOptions } from '../auth/[...nextauth]/options'
+// Update this import to use the auth.ts file directly
+import { authOptions } from '../auth/[...nextauth]/auth'
 import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
