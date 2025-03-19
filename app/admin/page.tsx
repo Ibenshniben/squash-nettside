@@ -4,7 +4,17 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 
-// Define the Booking interface
+// Update the import to use the auth.ts file directly
+import { authOptions } from '../api/auth/[...nextauth]/auth'
+
+// Define interfaces for type safety
+interface User {
+  id: string;
+  name: string | null;
+  email: string | null;
+  role: string;
+}
+
 interface Booking {
   id: string;
   court: string;
@@ -12,18 +22,10 @@ interface Booking {
   startTime: string;
   endTime: string;
   user?: {
+    id: string;
     name: string | null;
     email: string | null;
-    id: string;
   };
-}
-
-// Define the User interface
-interface User {
-  id: string;
-  name: string | null;
-  email: string | null;
-  role: string;
 }
 
 export default function AdminDashboard() {
@@ -116,6 +118,7 @@ export default function AdminDashboard() {
     }
   }
 
+  // Fix the TypeScript error by adding type annotations
   const handleToggleUserRole = async (userId: string, currentRole: string) => {
     const newRole = currentRole === 'ADMIN' ? 'USER' : 'ADMIN'
     
