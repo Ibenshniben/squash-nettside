@@ -5,13 +5,21 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
+interface Booking {
+  id: string;
+  court: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+}
+
 export default function BookingPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [selectedDate, setSelectedDate] = useState('')
   const [selectedCourt, setSelectedCourt] = useState('1')
   const [selectedTime, setSelectedTime] = useState('')
-  const [bookings, setBookings] = useState([])
+  const [bookings, setBookings] = useState<Booking[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [isAuthorized, setIsAuthorized] = useState(false)
@@ -45,14 +53,14 @@ export default function BookingPage() {
     return null
   }
   
-  const isTimeSlotBooked = (court, time) => {
+  const isTimeSlotBooked = (court: string, time: string) => {
     return bookings.some(booking => 
       booking.court === court && 
       booking.startTime === time
     )
   }
 
-  const handleBooking = async (e) => {
+  const handleBooking = async (e: React.FormEvent) => {
     e.preventDefault()
     
     if (!selectedDate || !selectedCourt || !selectedTime) {
