@@ -22,6 +22,7 @@ export default function BookingPage() {
   const [bookings, setBookings] = useState<Booking[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('') // Add this line
   const [isAuthorized, setIsAuthorized] = useState(false)
   
   // Set today's date as default
@@ -126,6 +127,18 @@ export default function BookingPage() {
       {!isAuthorized && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
           Unauthorized
+        </div>
+      )}
+
+      {success && (
+        <div className="mb-6 p-4 bg-green-100 text-green-700 rounded-md">
+          {success}
+        </div>
+      )}
+      
+      {error && (
+        <div className="mb-6 p-4 bg-red-100 text-red-700 rounded-md">
+          {error}
         </div>
       )}
       
