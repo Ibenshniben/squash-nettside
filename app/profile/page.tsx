@@ -23,7 +23,7 @@ export default function Profile() {
     }
   }, [session, status, router])
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
     setMessage('')

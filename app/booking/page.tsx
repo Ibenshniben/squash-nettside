@@ -103,12 +103,43 @@ export default function BookingPage() {
       setSelectedTime('') // Reset selected time
     } catch (error) {
       console.error('Error creating booking:', error)
-      setError(error.message || 'Kunne ikke reservere bane. Vennligst prøv igjen.')
+      setError(
+        error instanceof Error 
+          ? error.message 
+          : 'Kunne ikke reservere bane. Vennligst prøv igjen.'
+      )
     } finally {
       setIsLoading(false)
     }
   }
 
+  const fetchBookings = async () => {
+    try {
+      const response = await fetch(`/api/bookings?date=${selectedDate}`)
+      const data = await response.json()
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to fetch bookings')
+      }
+      
+      setBookings(data.bookings)
+    } catch (error) {
+      console.error('Error fetching bookings:', error)
+      setError(
+        error instanceof Error 
+          ? error.message 
+          : 'Kunne ikke hente reservasjoner. Vennligst prøv igjen.'
+      )
+    }
+  }
+
+  // Add this useEffect to fetch bookings when date changes
+  useEffect(() => {
+    if (selectedDate) {
+      fetchBookings()
+    }
+  }, [selectedDate])
+  
   if (status === 'loading') {
     return (
       <div className="container mx-auto px-4 py-12 text-center">

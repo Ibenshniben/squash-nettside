@@ -15,8 +15,9 @@ export default function Navbar() {
 
   // Close dropdown when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (isDropdownOpen && !event.target.closest('.user-dropdown-container')) {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (isDropdownOpen && !target.closest('.user-dropdown-container')) {
         setIsDropdownOpen(false)
       }
     }
@@ -59,9 +60,9 @@ export default function Navbar() {
                 {status === 'authenticated' ? (
                   <>
                     <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-medium">
-                      {session.user.name ? session.user.name.charAt(0).toUpperCase() : session.user.email.charAt(0).toUpperCase()}
+                      {(session.user?.name || session.user?.email || '?').charAt(0).toUpperCase()}
                     </div>
-                    <span className="hidden sm:inline font-medium">{session.user.name || session.user.email}</span>
+                    <span className="hidden sm:inline font-medium">{session.user?.name || session.user?.email || 'User'}</span>
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>

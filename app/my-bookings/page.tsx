@@ -5,10 +5,20 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
+// Add this interface at the top of the file, after the imports
+interface Booking {
+  id: string;
+  date: string;
+  court: string;
+  startTime: string;
+  endTime: string;
+}
+
 export default function MyBookings() {
   const { data: session, status } = useSession()
   const router = useRouter()
-  const [bookings, setBookings] = useState([])
+  // Update the state definition with the Booking type
+  const [bookings, setBookings] = useState<Booking[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -42,7 +52,7 @@ export default function MyBookings() {
     }
   }
 
-  const handleCancelBooking = async (bookingId) => {
+  const handleCancelBooking = async (bookingId: string) => {
     if (!confirm('Er du sikker på at du vil kansellere denne reservasjonen?')) {
       return
     }
