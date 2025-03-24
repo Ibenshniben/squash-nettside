@@ -91,9 +91,7 @@ export default function Navbar({ hideLoginButton = true }) {
             <Link href="/about" className="hover:text-blue-200 transition">Om oss</Link>
             <Link href="/location" className="hover:text-blue-200 transition">Finn oss</Link>
             <Link href="/contact" className="hover:text-blue-200 transition">Kontakt</Link>
-            {session?.user?.role === 'ADMIN' && (
-              <Link href="/admin" className="hover:text-blue-200 transition">Admin</Link>
-            )}
+            {/* Removed admin link */}
           </div>
           
           {/* User Menu - Only render if hideLoginButton is false */}
@@ -117,9 +115,7 @@ export default function Navbar({ hideLoginButton = true }) {
             <Link href="/about" className="block py-2 hover:text-blue-200">Om oss</Link>
             <Link href="/location" className="block py-2 hover:text-blue-200">Finn oss</Link>
             <Link href="/contact" className="block py-2 hover:text-blue-200">Kontakt</Link>
-            {session?.user?.role === 'ADMIN' && (
-              <Link href="/admin" className="block py-2 hover:text-blue-200">Admin</Link>
-            )}
+            {/* Removed admin link */}
           </div>
         )}
       </div>
