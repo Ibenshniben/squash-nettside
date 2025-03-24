@@ -1,20 +1,22 @@
-import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth/next'
-import { PrismaClient } from '@prisma/client'
-// Fix the import path to match your project structure
-import { authOptions } from '@/lib/auth' // or the correct path to your auth options
+import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth/next';
+import { prisma } from '../../../lib/prisma';
+import { authOptions } from '@/lib/auth';
 
-const prisma = new PrismaClient()
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+export const revalidate = 0;
+export const runtime = 'nodejs';
 
 export async function GET(request: Request) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getServerSession(authOptions);
     
     if (!session || !session.user) {
       return NextResponse.json(
         { message: 'Unauthorized' },
         { status: 401 }
-      )
+      );
     }
     
     const bookings = await prisma.booking.findMany({
@@ -31,14 +33,14 @@ export async function GET(request: Request) {
         startTime: true,
         endTime: true,
       },
-    })
+    });
     
-    return NextResponse.json({ bookings })
+    return NextResponse.json({ bookings });
   } catch (error) {
-    console.error('Error fetching user bookings:', error)
+    console.error('Error fetching user bookings:', error);
     return NextResponse.json(
       { message: 'Failed to fetch bookings' },
       { status: 500 }
-    )
+    );
   }
 }
