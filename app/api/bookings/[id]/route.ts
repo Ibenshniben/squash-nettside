@@ -1,14 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../../../lib/prisma';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/auth';
+
+export const dynamic = 'force-dynamic';
 
 // GET a specific booking
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const bookingId = params.id;
-
   try {
+    const session = await getServerSession(authOptions);
+    const bookingId = params.id;
+
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
     });
@@ -29,16 +34,27 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const bookingId = params.id;
-
   try {
-    // Check if booking exists
+    const session = await getServerSession(authOptions);
+    
+    if (!session) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
+
+    const bookingId = params.id;
+
+    // First, get the booking to check ownership
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
     });
 
     if (!booking) {
       return NextResponse.json({ message: 'Booking not found' }, { status: 404 });
+    }
+
+    // Check if user is admin or the booking owner
+    if (session.user.role !== 'ADMIN' && booking.userId !== session.user.id) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
     // Delete the booking
