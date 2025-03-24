@@ -2,8 +2,8 @@ import { NextAuthOptions } from 'next-auth';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
-// Update the import to use the correct path to your prisma client
-import { prisma } from '@/lib/prisma'
+// Fix the import path to match your project structure
+import { prisma } from '../../lib/prisma';
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma) as any,  // Type assertion to resolve compatibility issue
