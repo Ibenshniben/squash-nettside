@@ -1,9 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../../lib/prisma';
+import { getServerSession } from 'next-auth/next';  // Updated import
+import { authOptions } from '@/lib/auth';
+
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+export const revalidate = 0;
+export const runtime = 'nodejs';  // Added runtime specification
 
 // GET bookings for a specific date
 export async function GET(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    
+    if (!session) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
+
     const searchParams = request.nextUrl.searchParams;
     const date = searchParams.get('date');
 
@@ -35,17 +48,21 @@ export async function GET(request: NextRequest) {
 // Create a new booking
 export async function POST(request: NextRequest) {
   try {
-    const { court, date, startTime, endTime, name, email } = await request.json();
+    const session = await getServerSession(authOptions);
+    
+    if (!session) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
 
-    // Validate input
-    if (!court || !date || !startTime || !endTime || !name || !email) {
+    const { court, date, startTime, endTime } = await request.json();
+
+    if (!court || !date || !startTime || !endTime) {
       return NextResponse.json(
         { message: 'Missing required fields' },
         { status: 400 }
       );
     }
 
-    // Check if timeslot is available
     const existingBooking = await prisma.booking.findFirst({
       where: {
         date,
@@ -61,15 +78,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create booking
     const booking = await prisma.booking.create({
       data: {
         court,
         date,
         startTime,
         endTime,
-        name,
-        email
+        userId: session.user.id
       }
     });
 
