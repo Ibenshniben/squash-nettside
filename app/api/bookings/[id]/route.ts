@@ -1,26 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { PrismaClient } from '@prisma/client';
-// Fix the import path - remove the redundant "api" reference
-import { authOptions } from '../../auth/[...nextauth]/auth';
+import { prisma } from '../../../../lib/prisma';
 
-const prisma = new PrismaClient();
-
-// Delete booking (admin or booking owner)
-export async function DELETE(
+// GET a specific booking
+export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const session = await getServerSession(authOptions);
-
-  if (!session) {
-    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-  }
-
   const bookingId = params.id;
 
   try {
-    // First, get the booking to check ownership
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
     });
@@ -29,9 +17,28 @@ export async function DELETE(
       return NextResponse.json({ message: 'Booking not found' }, { status: 404 });
     }
 
-    // Check if user is admin or the booking owner
-    if (session.user.role !== 'ADMIN' && booking.userId !== session.user.id) {
-      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ booking });
+  } catch (error) {
+    console.error('Error fetching booking:', error);
+    return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
+  }
+}
+
+// DELETE a booking
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const bookingId = params.id;
+
+  try {
+    // Check if booking exists
+    const booking = await prisma.booking.findUnique({
+      where: { id: bookingId },
+    });
+
+    if (!booking) {
+      return NextResponse.json({ message: 'Booking not found' }, { status: 404 });
     }
 
     // Delete the booking
