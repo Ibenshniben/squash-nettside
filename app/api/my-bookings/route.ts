@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { PrismaClient } from '@prisma/client'
-import { authOptions } from '../auth/[...nextauth]/auth'
+// Fix the import path to match your project structure
+import { authOptions } from '@/lib/auth' // or the correct path to your auth options
 
 const prisma = new PrismaClient()
 
