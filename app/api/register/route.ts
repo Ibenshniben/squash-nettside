@@ -1,19 +1,22 @@
-import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-import bcrypt from 'bcrypt'
+import { NextResponse } from 'next/server';
+import { prisma } from '../../../lib/prisma';
+import bcrypt from 'bcrypt';
 
-const prisma = new PrismaClient()
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
+export const revalidate = 0;
+export const runtime = 'nodejs';
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json()
-    const { name, email, password } = body
+    const body = await request.json();
+    const { name, email, password } = body;
 
     if (!name || !email || !password) {
       return NextResponse.json(
         { message: 'Manglende påkrevde felt' },
         { status: 400 }
-      )
+      );
     }
 
     // Check if user already exists
