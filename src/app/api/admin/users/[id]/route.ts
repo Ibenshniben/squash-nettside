@@ -4,8 +4,20 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 export const fetchCache = 'force-no-store';
 
-// Mock user data
-const mockUsers = {
+// Define an interface for the user type
+interface MockUser {
+  id: string;
+  name: string;
+  email: string;
+}
+
+// Define the type for the mockUsers object
+interface MockUsers {
+  [key: string]: MockUser;
+}
+
+// Mock user data with proper typing
+const mockUsers: MockUsers = {
   '1': { id: '1', name: 'John Doe', email: 'john@example.com' },
   '2': { id: '2', name: 'Jane Smith', email: 'jane@example.com' }
 };
